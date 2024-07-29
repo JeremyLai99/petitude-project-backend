@@ -184,48 +184,58 @@ router.put('/update-insurance-order', async (req, res) => {
     }
   });
 
-// 刪除未付款的訂單
-router.delete('/delete-insurance-order', async (req, res) =>{
-  const { insurance_order_id} = req.body  //從請求主體中獲得訂單號碼
-  
-  if (!insurance_order_id) {
-    return res.status(400).json({
-      status: 'error',
-      message: '缺少必要的 insurance_order_id'
-    });
-  }
+  // 刪除未付款的訂單
+  router.delete('/delete-insurance-order', async (req, res) =>{
 
-  try {
-    const order = await db.query(
-    'SELECT * FROM insurance_order WHERE insurance_order_id = ?',
-    [insurance_order_id]
-    )
-
-    if (order.length === 0) {
-      return res.status(404).json({
+    const { insurance_order_id} = req.body  //從請求主體中獲得訂單號碼
+    
+    if (!insurance_order_id) {
+      console.log('Missing insurance_order_id');
+      return res.status(400).json({
         status: 'error',
-        message: '找不到該訂單'
-      })
+        message: '缺少必要的 insurance_order_id'
+      });
     }
 
-    if (order[0].payment_status === "未付款") {
-    await db.query (
-      'DELETE FROM insurance_order WHERE insurance_order_id = ?',
+    try {
+      const order = await db.query(
+      'SELECT * FROM insurance_order WHERE insurance_order_id = ?',
       [insurance_order_id]
-    )
-    res.json({
-      status: 'success',
-      message: '該保單已成功刪除'
+      )
+
+      if (!order) {
+        console.log('Order not found');
+        return res.status(404).json({
+          status: 'error',
+          message: '找不到該訂單'
+        });
+      }
+
+      if (order[0][0].payment_status.trim() === "未付款") {
+      const result = await db.query (
+        'DELETE FROM insurance_order WHERE insurance_order_id = ?',
+        [insurance_order_id]
+      )
+      console.log('Delete result:', result);
+      res.json({
+        status: 'success',
+        message: '該保單已成功刪除'
+      })
+    } else {
+      res.status(400).json({
+      status: 'error',
+      message: '該訂單已付款，支付狀態為: ' + order[0][0].payment_status
     })
-  } 
-} catch (error) {
-  console.error('刪除訂單時發生錯誤:', error)
-  res.status(500).json({
-    status: 'error',
-    message: '刪除訂單時發生錯誤'
+  } } catch (error) {
+    console.error('刪除訂單時發生錯誤:', error)
+    res.status(500).json({
+      status: 'error',
+      message: '刪除訂單時發生錯誤'
+    })
+  }
   })
-}
-})
+
+
 
 
 
