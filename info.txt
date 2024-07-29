@@ -1,0 +1,42 @@
+ 1. npm 工具
+  a. 要如何以全域的方式安裝 nodemon
+  b. 如何初始化專案
+  c. 如何安裝專案套件, 例如 express
+  d. 如何移除專案套件
+  e. git clone 的專案, 如何一次安裝所有的套件
+  f. 如何執行 package.json 裡的 scripts
+
+ 2. 建立 Express server
+
+ 3. 設定 404 頁面
+
+ 4. 設定靜態內容資料夾
+
+ 5. EJS 的設定
+
+ 6. 如何設定 top-level middlewares, 用來處理 urlencoded, json 的表單格式
+
+ 7. 檔案上傳的模組 multer
+
+ 8. 製作上傳檔案的模組 (upload-imgs.js)
+
+ 9. 前端預覽圖檔的方式 (二種)
+
+10. 路徑的變數 (動態路由) req.params (parameters)
+
+11. 路由的模組化 (router), 掛在主程式
+
+12. 自訂 middlewares
+
+13. fetch 發送資料的三種格式 (放在 body 的資料)
+
+14. URLSearchParams 的用法 (urlencoded)
+
+15. 用 express-session 建立 session 功能
+
+16. 使用 moment.js 以標準格式輸出日期或日期時間; 解析輸入的時間格式.
+
+17. 會確認環境變數在 app 裡有吃到設定
+
+18. 資料庫連線的模組設定
+
