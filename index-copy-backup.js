@@ -26,7 +26,8 @@ import memberRouter from "./routes/b2c_member.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
-
+import { WebSocketServer } from "ws";
+import http from 'http';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -36,6 +37,33 @@ import insuranceRouter from "./routes/insurance.js";
 // const upload = multer({ dest: "tmp_uploads/" }); // 初始化 Multer 以將上傳的檔案暫存到 tmp_uploads 資料夾
 
 const app = express(); // 創建 Express 應用實例
+
+// websocket用
+const server = http.createServer(app);
+const wss = new WebSocketServer({ server });
+// 存儲 WebSocket 連接
+const connections = new Map();
+// 存儲綠界發送的tradeNoToOrderId
+// const tradeNoToOrderId = new Map();
+
+wss.on('connection', (ws) => {
+  ws.on('message', (message) => {
+    const data = JSON.parse(message);
+    if (data.type === 'init') {
+      connections.set(data.orderId, ws);
+    }
+  });
+});
+
+function sendPaymentResult(orderId, result) {
+  const ws = connections.get(orderId);
+  if (ws) {
+    ws.send(JSON.stringify(result));
+    connections.delete(orderId);
+  }
+}
+
+
 
 
 app.set("view engine", "ejs"); // 設定模板引擎為 EJS
@@ -276,6 +304,12 @@ app.use("/ecpay", paymentRouter);
 // 寵物保險路由開始
 app.use("/insurance", insuranceRouter);
 app.use("/ecpayJ", insurancePayment);
+// 將 sendPaymentResult 傳遞給路由
+app.use((req, res, next) => {
+  req.sendPaymentResult = sendPaymentResult;
+  next();
+});
+// server.listen(3001, () => console.log('Server started on port 3001'));
 app.get("/test", (req, res) => {
   res.json({ message: "Server is running" });
 });
@@ -312,3 +346,4 @@ app.listen(port, () => {
   console.log(`Server start: port ${port}`);
 });
 
+export { connections  };

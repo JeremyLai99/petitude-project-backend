@@ -3,12 +3,9 @@ const router = express.Router();
 import * as crypto from "crypto";
 import db from "../utils/connect-mysql.js";
 
-// 創建一個 Map 來存儲 MerchantTradeNo 和 orderId 的對應關係
-const tradeNoToOrderId = new Map();
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
-  const orderId = req.params.orderId; // 抓orderId
   const amount = req.query.amount;
   console.log("ttt", req.query);
   //綠界全方位金流技術文件：
@@ -53,7 +50,7 @@ router.get("/", function (req, res, next) {
     .toString()
     .padStart(2, "0")}${new Date().getMilliseconds().toString().padStart(2)}`;
 
-    tradeNoToOrderId.set(MerchantTradeNo, orderId); // 連結MerchantTradeNo & orderId
+  
 
   const MerchantTradeDate = new Date().toLocaleDateString("zh-TW", {
     year: "numeric",
@@ -135,42 +132,21 @@ router.get("/", function (req, res, next) {
     .join("");
 
   //六、製作送出畫面
-  // const htmlContent = `
-  // <!DOCTYPE html>
-  // <html>
-  // <head>
-  //     <title>全方位金流-測試</title>
-  // </head>
-  // <body>
-  //     <form method="post" action="${APIURL}">
-  // ${inputs}
-  // <input type ="submit" value = "送出參數">
-  //     </form>
-  // </body>
-  // </html>
-  // `;
-
-
-  //六、製作送出畫面(建立新視窗時用)
-const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-    <title>全方位金流-測試</title>
-</head>
-<body>
-    <form id="ecpayForm" method="post" action="${APIURL}">
-${inputs}
-    </form>
-    <script>
-        document.getElementById('ecpayForm').submit();
-    </script>
-</body>
-</html>
-`;
-
-
-    
+  const htmlContent = `
+  <!DOCTYPE html>
+  <html>
+  <head>
+      <title>全方位金流-測試</title>
+  </head>
+  <body>
+      <form method="post" action="${APIURL}">
+  ${inputs}
+  <input type ="submit" value = "送出參數">
+      </form>
+  </body>
+  </html>
+  `;
+   
 
   // res.send(htmlContent);
 
@@ -198,25 +174,6 @@ ${inputs}
   res.json({ htmlContent });
 });
 
-
-// 處理綠界回調
-router.post("/payment-result", function (req, res){
-  const {RtnCode, MerchantTradeNo } = req.body
-
-  if (RtnCode === '1') {
-    // 向前端發送支付成功的消息
-    const orderId = tradeNoToOrderId.get(MerchantTradeNo);
-    if (orderId) {
-      req.sendPaymentResult(orderId, { success: true });
-      tradeNoToOrderId.delete(MerchantTradeNo);
-      res.status(200).send('OK');
-    } else {
-      res.status(400).send('Order not found');
-    }
-  } else {
-    res.status(400).send('Payment Failed');
-  }
-});
 
 export default router;
 
